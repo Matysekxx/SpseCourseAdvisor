@@ -1,0 +1,70 @@
+{
+  "title": "Kariérní poradce SPŠE Ječná",
+  "questions": [
+    {
+      "prompt": "Baví Tě programování a práce s daty nebo kódem?",
+      "fieldForYes": "Informační technologie"
+    },
+    {
+      "prompt": "Láká Tě umělá inteligence (AI), machine learning nebo datová analýza?",
+      "fieldForYes": "Informační technologie"
+    },
+    {
+      "prompt": "Chtěl bys navrhovat grafické rozhraní (UI/UX) pro aplikace a weby?",
+      "fieldForYes": "Informační technologie"
+    },
+    {
+      "prompt": "Zajímá Tě vývoj her (například v Unity nebo Unreal Engine)?",
+      "fieldForYes": "Informační technologie"
+    },
+    {
+      "prompt": "Zajímá Tě správa serverů, sítí a cloudových služeb (AWS, Azure, Linux)?",
+      "fieldForYes": "Informační technologie"
+    },
+    {
+      "prompt": "Chceš se naučit chránit systémy před hackery a rozumět kyberbezpečnosti?",
+      "fieldForYes": "Informační technologie"
+    },
+    {
+      "prompt": "Baví Tě automatizace úloh, psaní skriptů nebo vytváření vlastních nástrojů?",
+      "fieldForYes": "Informační technologie"
+    },
+    {
+      "prompt": "Láká Tě vývoj aplikací, her nebo softwaru, které používají tisíce lidí?",
+      "fieldForYes": "Informační technologie"
+    },
+
+    {
+      "prompt": "Baví Tě práce s hardwarem, měřáky, senzory nebo robotickými prvky?",
+      "fieldForYes": "Elektrotechnika a robotika"
+    },
+    {
+      "prompt": "Chceš programovat mikrokontroléry (Arduino, ESP32, PLC) pro řízení strojů?",
+      "fieldForYes": "Elektrotechnika a robotika"
+    },
+    {
+      "prompt": "Zajímá Tě návrh elektrických obvodů, které skutečně něco ovládají?",
+      "fieldForYes": "Elektrotechnika a robotika"
+    },
+    {
+      "prompt": "Láká Tě stavba robotů, mechanických ramen nebo inteligentních zařízení?",
+      "fieldForYes": "Elektrotechnika a robotika"
+    },
+    {
+      "prompt": "Rád/a rozebíráš elektroniku a zajímá Tě, jak fungují desky plošných spojů (PCB)?",
+      "fieldForYes": "Elektrotechnika a robotika"
+    },
+    {
+      "prompt": "Chceš umět hledat a opravovat poruchy v elektrických zařízeních nebo rozvodech?",
+      "fieldForYes": "Elektrotechnika a robotika"
+    },
+    {
+      "prompt": "Zajímá Tě výroba, přenos nebo řízení elektrické energie?",
+      "fieldForYes": "Elektrotechnika a robotika"
+    },
+    {
+      "prompt": "Láká Tě oblast elektromobility, fotovoltaiky nebo moderní energetiky?",
+      "fieldForYes": "Elektrotechnika a robotika"
+    }
+  ]
+}
