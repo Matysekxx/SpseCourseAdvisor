@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.net.URL;
 import java.util.Optional;
 
 public class Window extends JFrame implements PropertyChangeListener {
@@ -24,7 +25,9 @@ public class Window extends JFrame implements PropertyChangeListener {
     private QuizController controller;
     private final JPanel mainCardPanel;
     private JPanel questionContainer;
+    private JPanel answerButtonsPanel;
     private JButton prevButton;
+    private JLabel imageLabel;
     private JButton nextButton;
     private JLabel resultLabel;
 
@@ -97,28 +100,40 @@ public class Window extends JFrame implements PropertyChangeListener {
     }
 
     private JComponent buildQuestionnairePanel() {
-        final JPanel mainPanel = new JPanel(new BorderLayout());
+        final JPanel mainPanel = new JPanel(new BorderLayout(0, 20));
         mainPanel.setOpaque(false);
+        mainPanel.setBorder(BorderFactory.createEmptyBorder(24, 24, 24, 24));
 
         questionContainer = new JPanel(new BorderLayout());
         questionContainer.setOpaque(false);
-        questionContainer.setBorder(BorderFactory.createEmptyBorder(24, 24, 24, 24));
-        mainPanel.add(questionContainer, BorderLayout.CENTER);
+        mainPanel.add(questionContainer, BorderLayout.NORTH);
 
-        final JPanel nav = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        nav.setOpaque(false);
+        JPanel imagePanel = new JPanel(new BorderLayout());
+        imagePanel.setOpaque(false);
+        imageLabel = new JLabel();
+        imageLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        imagePanel.add(imageLabel, BorderLayout.CENTER);
+        mainPanel.add(imagePanel, BorderLayout.CENTER);
+
+        final JPanel buttonContainer = new JPanel(new BorderLayout());
+        buttonContainer.setOpaque(false);
+
+        answerButtonsPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 0));
+        answerButtonsPanel.setOpaque(false);
 
         prevButton = new JButton("Zpět");
+        styleSecondary(prevButton);
+        prevButton.addActionListener(e -> controller.previousQuestion());
+
         nextButton = new JButton("Další");
         stylePrimary(nextButton);
-        styleSecondary(prevButton);
-
-        prevButton.addActionListener(e -> controller.previousQuestion());
         nextButton.addActionListener(e -> controller.nextQuestion());
 
-        nav.add(prevButton);
-        nav.add(nextButton);
-        mainPanel.add(nav, BorderLayout.SOUTH);
+        buttonContainer.add(prevButton, BorderLayout.LINE_START);
+        buttonContainer.add(answerButtonsPanel, BorderLayout.CENTER);
+        buttonContainer.add(nextButton, BorderLayout.LINE_END);
+
+        mainPanel.add(buttonContainer, BorderLayout.SOUTH);
 
         return mainPanel;
     }
@@ -155,7 +170,7 @@ public class Window extends JFrame implements PropertyChangeListener {
 
         final String resultMessage;
         if (bestField.isPresent() && bestField.get().score > 0) {
-            QuizModel.FieldStats winner = bestField.get();
+            final QuizModel.FieldStats winner = bestField.get();
             resultMessage = String.format(
                     "<html><div style='text-align: center;'>Nejvíce ti sedí obor:<br><h1 style='color: " + toHex(BRAND_RED_ACCENT) + ";'>%s</h1><br>Shoda: %.0f %%</div></html>",
                     winner.name, winner.getPercentage()
@@ -168,24 +183,24 @@ public class Window extends JFrame implements PropertyChangeListener {
     }
 
     public void showWelcomePanel() {
-        CardLayout cl = (CardLayout) mainCardPanel.getLayout();
+        final CardLayout cl = (CardLayout) mainCardPanel.getLayout();
         cl.show(mainCardPanel, WELCOME_PANEL);
     }
 
     public void showQuestionnairePanel() {
-        CardLayout cl = (CardLayout) mainCardPanel.getLayout();
+        final CardLayout cl = (CardLayout) mainCardPanel.getLayout();
         cl.show(mainCardPanel, QUESTIONNAIRE_PANEL);
     }
 
     public void showResultPanel() {
-        CardLayout cl = (CardLayout) mainCardPanel.getLayout();
+        final CardLayout cl = (CardLayout) mainCardPanel.getLayout();
         cl.show(mainCardPanel, RESULT_PANEL);
     }
     private void stylePrimary(AbstractButton b) { styleButton(b, BRAND_BLUE, Color.BLACK); }
 
     private void styleSecondary(AbstractButton b) {
         styleButton(b, Color.WHITE, Color.BLACK);
-        Border border = BorderFactory.createCompoundBorder(
+        final Border border = BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(Color.LIGHT_GRAY, 1),
                 BorderFactory.createEmptyBorder(7, 19, 7, 19)
         );
@@ -227,10 +242,66 @@ public class Window extends JFrame implements PropertyChangeListener {
 
     private void refreshQuestion() {
         questionContainer.removeAll();
+        answerButtonsPanel.removeAll();
+
         final JsonLoader.Question q = model.getCurrentQuestion();
-        questionContainer.add(buildQuestionCard(q), BorderLayout.CENTER);
+
+        final JLabel prompt = new JLabel(
+                "<html><div style='text-align: center;'>" + q.prompt() + "</div></html>",
+                SwingConstants.CENTER
+        );
+        prompt.setFont(prompt.getFont().deriveFont(Font.BOLD, 28f));
+        prompt.setForeground(Color.BLACK);
+        questionContainer.add(prompt, BorderLayout.CENTER);
+
+        final String imageName = q.image();
+        if (imageName != null && !imageName.isEmpty()) {
+            try {
+                Icon icon = null;
+                if (imageName.toLowerCase().endsWith(".svg")) {
+                    icon = new FlatSVGIcon(imageName, 0.5f);
+                } else {
+                    final URL imageUrl = Window.class.getResource("/" + imageName);
+                    if (imageUrl != null) {
+                        ImageIcon imageIcon = new ImageIcon(imageUrl);
+                        final int maxWidth = 700;
+                        final int maxHeight = 500;
+                        if (imageIcon.getIconWidth() > maxWidth || imageIcon.getIconHeight() > maxHeight) {
+                            final var widthRatio = (double) maxWidth / imageIcon.getIconWidth();
+                            final var heightRatio = (double) maxHeight / imageIcon.getIconHeight();
+                            final double ratio = Math.min(widthRatio, heightRatio);
+                            final var newWidth = (int) (imageIcon.getIconWidth() * ratio);
+                            final var newHeight = (int) (imageIcon.getIconHeight() * ratio);
+                            final Image scaledImage = imageIcon.getImage().getScaledInstance(
+                                    newWidth, newHeight, Image.SCALE_SMOOTH
+                            );
+                            icon = new ImageIcon(scaledImage);
+                        } else {
+                            icon = imageIcon;
+                        }
+                    }
+                }
+
+                if (icon != null) {
+                    imageLabel.setIcon(icon);
+                } else {
+                    imageLabel.setIcon(null);
+                    System.err.println("Image resource not found: " + imageName);
+                }
+            } catch (Exception e) {
+                imageLabel.setIcon(null);
+                System.err.println("Error loading image '" + imageName + "': " + e.getMessage());
+            }
+        } else {
+            imageLabel.setIcon(null);
+        }
+
+        buildSingleChoiceQuestion(answerButtonsPanel, q);
+
         questionContainer.revalidate();
         questionContainer.repaint();
+        answerButtonsPanel.revalidate();
+        answerButtonsPanel.repaint();
 
         int index = model.getCurrentQuestionIndex();
         prevButton.setEnabled(index > 0);
@@ -240,37 +311,6 @@ public class Window extends JFrame implements PropertyChangeListener {
         } else {
             styleAccent(nextButton);
         }
-    }
-
-    private JComponent buildQuestionCard(JsonLoader.Question q) {
-        final ShadowPanel shadowPanel = new ShadowPanel();
-        final JPanel card = new JPanel(new GridBagLayout());
-        card.setBackground(Color.WHITE);
-        card.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
-
-        final GridBagConstraints gbc = new GridBagConstraints();
-        gbc.gridwidth = GridBagConstraints.REMAINDER;
-        gbc.weightx = 1;
-        gbc.insets = new Insets(10, 10, 10, 10);
-        
-        final JLabel prompt = new JLabel(
-                "<html><div style='text-align: center;'>" + q.prompt() + "</div></html>",
-                SwingConstants.CENTER
-        );
-        prompt.setFont(prompt.getFont().deriveFont(Font.BOLD, 28f));
-        prompt.setForeground(Color.BLACK);
-        card.add(prompt, gbc);
-        
-        final JPanel answerPanel = new JPanel(new GridBagLayout());
-        answerPanel.setOpaque(false);
-        buildSingleChoiceQuestion(answerPanel, q);
-
-        gbc.weighty = 0;
-        gbc.insets = new Insets(20, 10, 10, 10);
-        card.add(answerPanel, gbc);
-
-        shadowPanel.add(card);
-        return shadowPanel;
     }
 
     private void buildSingleChoiceQuestion(JPanel answerPanel, JsonLoader.Question q) {
@@ -290,15 +330,15 @@ public class Window extends JFrame implements PropertyChangeListener {
     }
 
     public static void launchFromJson(String resourcePath) {
-        try (InputStream is = Window.class.getResourceAsStream(resourcePath)) {
+        try (final InputStream is = Window.class.getResourceAsStream(resourcePath)) {
             if (is == null) {
                 throw new IOException("Resource not found: " + resourcePath);
             }
             final JsonLoader.Questionnaire q = JsonLoader.loadFromInputStream(is);
             SwingUtilities.invokeLater(() -> {
-                QuizModel model = new QuizModel(q);
-                Window view = new Window(model);
-                QuizController controller = new QuizController(model, view);
+                final QuizModel model = new QuizModel(q);
+                final Window view = new Window(model);
+                final QuizController controller = new QuizController(model, view);
                 view.setController(controller);
                 view.setVisible(true);
             });
@@ -340,29 +380,6 @@ public class Window extends JFrame implements PropertyChangeListener {
             final int x = (getWidth() - logo.getIconWidth()) / 2;
             final int y = (getHeight() - logo.getIconHeight()) / 2;
             logo.paintIcon(this, g, x, y);
-        }
-    }
-
-    private static class ShadowPanel extends JPanel {
-        public ShadowPanel() {
-            setLayout(new BorderLayout());
-            setOpaque(false);
-            setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
-        }
-
-        @Override
-        protected void paintComponent(Graphics g) {
-            super.paintComponent(g);
-            Graphics2D g2d = (Graphics2D) g.create();
-            g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-            int shadowSize = 10;
-            int width = getWidth() - (shadowSize * 2);
-            int height = getHeight() - (shadowSize * 2);
-            g2d.setColor(new Color(0, 0, 0, 50));
-            g2d.fillRoundRect(shadowSize, shadowSize, width, height, 15, 15);
-
-            g2d.dispose();
         }
     }
 }

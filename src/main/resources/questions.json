@@ -3,68 +3,84 @@
   "questions": [
     {
       "prompt": "Baví Tě programování a práce s daty nebo kódem?",
-      "fieldForYes": "Informační technologie"
+      "fieldForYes": "Informační technologie",
+      "image": "it_image/pexels-pixabay-276452.jpg"
     },
     {
       "prompt": "Láká Tě umělá inteligence (AI), machine learning nebo datová analýza?",
-      "fieldForYes": "Informační technologie"
+      "fieldForYes": "Informační technologie",
+      "image": "it_image/pexels-sanketgraphy-16125027.jpg"
     },
     {
       "prompt": "Chtěl bys navrhovat grafické rozhraní (UI/UX) pro aplikace a weby?",
-      "fieldForYes": "Informační technologie"
+      "fieldForYes": "Informační technologie",
+      "image": "it_image/pexels-tranmautritam-326503.jpg"
     },
     {
       "prompt": "Zajímá Tě vývoj her (například v Unity nebo Unreal Engine)?",
-      "fieldForYes": "Informační technologie"
+      "fieldForYes": "Informační technologie",
+      "image": "it_image/pexels-garrettmorrow-682933.jpg"
     },
     {
       "prompt": "Zajímá Tě správa serverů, sítí a cloudových služeb (AWS, Azure, Linux)?",
-      "fieldForYes": "Informační technologie"
+      "fieldForYes": "Informační technologie",
+      "image": "it_image/pc-4673906_1280.jpg"
     },
     {
-      "prompt": "Chceš se naučit chránit systémy před hackery a rozumět kyberbezpečnosti?",
-      "fieldForYes": "Informační technologie"
+      "prompt": "Chceš se dozvědět, jak navrhovat a spravovat databáze?",
+      "fieldForYes": "Informační technologie",
+      "image": "it_image/pexels-cookiecutter-1148820.jpg"
     },
     {
       "prompt": "Baví Tě automatizace úloh, psaní skriptů nebo vytváření vlastních nástrojů?",
-      "fieldForYes": "Informační technologie"
+      "fieldForYes": "Informační technologie",
+      "image": "it_image/code-1084923_1280.png"
     },
     {
       "prompt": "Láká Tě vývoj aplikací, her nebo softwaru, které používají tisíce lidí?",
-      "fieldForYes": "Informační technologie"
+      "fieldForYes": "Informační technologie",
+      "image": "it_image/pexels-pixabay-38544.jpg"
     },
 
     {
       "prompt": "Baví Tě práce s hardwarem, měřáky, senzory nebo robotickými prvky?",
-      "fieldForYes": "Elektrotechnika a robotika"
+      "fieldForYes": "Elektrotechnika a robotika",
+      "image": "ele_image/service-428540_1280.jpg"
     },
     {
       "prompt": "Chceš programovat mikrokontroléry (Arduino, ESP32, PLC) pro řízení strojů?",
-      "fieldForYes": "Elektrotechnika a robotika"
+      "fieldForYes": "Elektrotechnika a robotika",
+      "image": "ele_image/arduino-4753005_1280.jpg"
     },
     {
       "prompt": "Zajímá Tě návrh elektrických obvodů, které skutečně něco ovládají?",
-      "fieldForYes": "Elektrotechnika a robotika"
+      "fieldForYes": "Elektrotechnika a robotika",
+      "image": "ele_image/mother-board-5365197_1280.jpg"
     },
     {
       "prompt": "Láká Tě stavba robotů, mechanických ramen nebo inteligentních zařízení?",
-      "fieldForYes": "Elektrotechnika a robotika"
+      "fieldForYes": "Elektrotechnika a robotika",
+      "image": "ele_image/pexels-pavel-danilyuk-8438951.jpg"
     },
     {
       "prompt": "Rád/a rozebíráš elektroniku a zajímá Tě, jak fungují desky plošných spojů (PCB)?",
-      "fieldForYes": "Elektrotechnika a robotika"
+      "fieldForYes": "Elektrotechnika a robotika",
+      "image": "ele_image/workshop-4323956_1280.jpg"
     },
     {
       "prompt": "Chceš umět hledat a opravovat poruchy v elektrických zařízeních nebo rozvodech?",
-      "fieldForYes": "Elektrotechnika a robotika"
+      "fieldForYes": "Elektrotechnika a robotika",
+      "image": "ele_image/oscilloscope-4323959_1280.jpg"
     },
     {
       "prompt": "Zajímá Tě výroba, přenos nebo řízení elektrické energie?",
-      "fieldForYes": "Elektrotechnika a robotika"
+      "fieldForYes": "Elektrotechnika a robotika",
+      "image": "ele_image/power-lines-1868352_1280.jpg"
     },
     {
       "prompt": "Láká Tě oblast elektromobility, fotovoltaiky nebo moderní energetiky?",
-      "fieldForYes": "Elektrotechnika a robotika"
+      "fieldForYes": "Elektrotechnika a robotika",
+      "image": "ele_image/pexels-jamshaid-anwar-345256184-14673396.jpg"
     }
   ]
 }

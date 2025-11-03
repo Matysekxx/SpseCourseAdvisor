@@ -8,16 +8,17 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class JsonLoader {
-    public record Question(String prompt, String fieldForYes) {}
+    public record Question(String prompt, String fieldForYes, String image) {}
     public record Questionnaire(String title, List<Question> questions) { }
     public static Questionnaire loadFromInputStream(InputStream inputStream) throws IOException {
         if (inputStream == null) {
             throw new IOException("InputStream is null. Resource not found?");
         }
-        String content = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
+        final var content = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
         return loadFromString(content);
     }
 
@@ -30,8 +31,10 @@ public class JsonLoader {
             final JSONObject q = qs.getJSONObject(i);
             final String prompt = q.getString("prompt");
             final String fieldForYes = q.optString("fieldForYes", null);
-            questions.add(new Question(prompt, fieldForYes));
+            final String image = q.optString("image", null);
+            questions.add(new Question(prompt, fieldForYes, image));
         }
+        Collections.shuffle(questions);
         return new Questionnaire(title, questions);
     }
 }
