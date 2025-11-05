@@ -2,10 +2,13 @@ package org.spse_course_advisor;
 
 import com.formdev.flatlaf.extras.FlatSVGIcon;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.border.Border;
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -18,9 +21,10 @@ public class Window extends JFrame implements PropertyChangeListener {
     private static final Color BRAND_BLUE = new Color(148, 185, 239);
     private static final Color BRAND_RED_ACCENT = Color.RED;
     private static final Color BACKGROUND_GRAY = new Color(240, 240, 240);
-    private static final String WELCOME_PANEL = "WELCOME_PANEL";
-    private static final String QUESTIONNAIRE_PANEL = "QUESTIONNAIRE_PANEL";
-    private static final String RESULT_PANEL = "RESULT_PANEL";
+    private static final String WELCOME_PANEL = "WELCOME_PANEL" ;
+    private static final String QUESTIONNAIRE_PANEL = "QUESTIONNAIRE_PANEL" ;
+    private static final String RESULT_PANEL = "RESULT_PANEL" ;
+    private final String projectDir;
     private final QuizModel model;
     private QuizController controller;
     private final JPanel mainCardPanel;
@@ -31,7 +35,8 @@ public class Window extends JFrame implements PropertyChangeListener {
     private JButton nextButton;
     private JLabel resultLabel;
 
-    public Window(QuizModel model) {
+    public Window(QuizModel model, String projectDir) {
+        this.projectDir = projectDir;
         this.model = model;
         this.model.addPropertyChangeListener(this);
         setTitle("SPŠE Course Advisor");
@@ -39,10 +44,15 @@ public class Window extends JFrame implements PropertyChangeListener {
         setExtendedState(JFrame.MAXIMIZED_BOTH);
         setUndecorated(true);
 
-        this.addKeyListener(new KeyAdapter() {
+        final JRootPane rootPane = this.getRootPane();
+        final InputMap inputMap = rootPane.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+        final ActionMap actionMap = rootPane.getActionMap();
+
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "ESCAPE_ACTION");
+        actionMap.put("ESCAPE_ACTION", new AbstractAction() {
             @Override
-            public void keyPressed(KeyEvent e) {
-                if (e.getKeyCode() == KeyEvent.VK_ESCAPE) System.exit(0);
+            public void actionPerformed(ActionEvent e) {
+                System.exit(0);
             }
         });
 
@@ -174,16 +184,14 @@ public class Window extends JFrame implements PropertyChangeListener {
 
     public void updateResult() {
         final Optional<QuizModel.FieldStats> bestField = model.calculateResult();
-        
+
         final double itPercentage = model.getFieldStats().getOrDefault("Informační technologie", new QuizModel.FieldStats("", 0)).getPercentage();
         final double elePercentage = model.getFieldStats().getOrDefault("Elektrotechnika a robotika", new QuizModel.FieldStats("", 0)).getPercentage();
 
         final String resultMessage;
         if (itPercentage == 100.0 && elePercentage == 100.0) {
-            resultMessage = "<html><div style='text-align: center;'>Gratulujeme, jsi všestranný talent!<br>" +
-                    "Máš skvělé předpoklady pro <b style='color: " + toHex(BRAND_RED_ACCENT) + ";'>oba obory (IT i elektrotechniku)</b>.<br><br>" +
-
-                    "Oblast, kde se oba obory potkávají (Embedded systémy, Robotika, IoT),<br>je pro tebe jako stvořená!</div></html>";
+            resultMessage = "<html>" + "<div style='text-align: center;'>Gratulujeme, jsi všestranný talent!<br>" +
+                    "Máš skvělé předpoklady pro <b style='color: " + toHex(BRAND_RED_ACCENT) + ";'>oba obory (IT i elektrotechniku)</b>.<br></div></html>" ;
         } else if (bestField.isPresent() && bestField.get().score > 0) {
             final QuizModel.FieldStats winner = bestField.get();
             resultMessage = String.format(
@@ -191,7 +199,7 @@ public class Window extends JFrame implements PropertyChangeListener {
                     winner.name, winner.getPercentage()
             );
         } else {
-            resultMessage = "<html><div style='text-align: center;'>Nepodařilo se určit vhodný obor.<br>Zkus to znovu!</div></html>";
+            resultMessage = "<html><div style='text-align: center;'>Nepodařilo se určit vhodný obor.<br>Zkus to znovu!</div></html>" ;
         }
 
         resultLabel.setText(resultMessage);
@@ -211,7 +219,10 @@ public class Window extends JFrame implements PropertyChangeListener {
         final CardLayout cl = (CardLayout) mainCardPanel.getLayout();
         cl.show(mainCardPanel, RESULT_PANEL);
     }
-    private void stylePrimary(AbstractButton b) { styleButton(b, BRAND_BLUE, Color.BLACK); }
+
+    private void stylePrimary(AbstractButton b) {
+        styleButton(b, BRAND_BLUE, Color.BLACK);
+    }
 
     private void styleSecondary(AbstractButton b) {
         styleButton(b, Color.WHITE, Color.BLACK);
@@ -227,7 +238,10 @@ public class Window extends JFrame implements PropertyChangeListener {
             }
         });
     }
-    private void styleAccent(AbstractButton b) { styleButton(b, BRAND_RED_ACCENT, Color.WHITE); }
+
+    private void styleAccent(AbstractButton b) {
+        styleButton(b, BRAND_RED_ACCENT, Color.WHITE);
+    }
 
     private void styleButton(AbstractButton b, Color background, Color foreground) {
         b.setBackground(background);
@@ -248,6 +262,7 @@ public class Window extends JFrame implements PropertyChangeListener {
                 }
                 b.setBackground(background.brighter());
             }
+
             public void mouseExited(MouseEvent evt) {
                 b.setBackground(background);
                 b.setForeground(foreground);
@@ -272,37 +287,27 @@ public class Window extends JFrame implements PropertyChangeListener {
         final String imageName = q.image();
         if (imageName != null && !imageName.isEmpty()) {
             try {
-                Icon icon = null;
-                if (imageName.toLowerCase().endsWith(".svg")) {
-                    icon = new FlatSVGIcon(imageName, 0.5f);
+                final Icon icon;
+                final File imageFile = new File(projectDir, imageName);
+                final ImageIcon imageIcon = new ImageIcon(imageFile.toURI().toURL());
+
+                final int maxWidth = 700;
+                final int maxHeight = 500;
+                if (imageIcon.getIconWidth() > maxWidth || imageIcon.getIconHeight() > maxHeight) {
+                    final var widthRatio = (double) maxWidth / imageIcon.getIconWidth();
+                    final var heightRatio = (double) maxHeight / imageIcon.getIconHeight();
+                    final double ratio = Math.min(widthRatio, heightRatio);
+                    final var newWidth = (int) (imageIcon.getIconWidth() * ratio);
+                    final var newHeight = (int) (imageIcon.getIconHeight() * ratio);
+                    final Image scaledImage = imageIcon.getImage().getScaledInstance(
+                            newWidth, newHeight, Image.SCALE_SMOOTH
+                    );
+                    icon = new ImageIcon(scaledImage);
                 } else {
-                    final URL imageUrl = Window.class.getResource("/" + imageName);
-                    if (imageUrl != null) {
-                        ImageIcon imageIcon = new ImageIcon(imageUrl);
-                        final int maxWidth = 700;
-                        final int maxHeight = 500;
-                        if (imageIcon.getIconWidth() > maxWidth || imageIcon.getIconHeight() > maxHeight) {
-                            final var widthRatio = (double) maxWidth / imageIcon.getIconWidth();
-                            final var heightRatio = (double) maxHeight / imageIcon.getIconHeight();
-                            final double ratio = Math.min(widthRatio, heightRatio);
-                            final var newWidth = (int) (imageIcon.getIconWidth() * ratio);
-                            final var newHeight = (int) (imageIcon.getIconHeight() * ratio);
-                            final Image scaledImage = imageIcon.getImage().getScaledInstance(
-                                    newWidth, newHeight, Image.SCALE_SMOOTH
-                            );
-                            icon = new ImageIcon(scaledImage);
-                        } else {
-                            icon = imageIcon;
-                        }
-                    }
+                    icon = imageIcon;
                 }
 
-                if (icon != null) {
-                    imageLabel.setIcon(icon);
-                } else {
-                    imageLabel.setIcon(null);
-                    System.err.println("Image resource not found: " + imageName);
-                }
+                imageLabel.setIcon(icon);
             } catch (Exception e) {
                 imageLabel.setIcon(null);
                 System.err.println("Error loading image '" + imageName + "': " + e.getMessage());
@@ -344,13 +349,14 @@ public class Window extends JFrame implements PropertyChangeListener {
         return button;
     }
 
-    public static void launchFromJson(String resourcePath) {
+    public static void launchFromJson(String projectDir) {
         try {
+            final String resourcePath = projectDir + File.separator + "questions.json" ;
             final InputStream is = new FileInputStream(resourcePath);
             final JsonLoader.Questionnaire q = JsonLoader.loadFromInputStream(is);
             SwingUtilities.invokeLater(() -> {
                 final QuizModel model = new QuizModel(q);
-                final Window view = new Window(model);
+                final Window view = new Window(model, projectDir);
                 final QuizController controller = new QuizController(model, view);
                 view.setController(controller);
                 view.setVisible(true);
@@ -373,15 +379,21 @@ public class Window extends JFrame implements PropertyChangeListener {
         return String.format("#%02x%02x%02x", color.getRed(), color.getGreen(), color.getBlue());
     }
 
-    private static class CenteredLogoPanel extends JPanel {
-        private static final Icon logo = new FlatSVGIcon("SPSE-Jecna_Logotyp_Cernobily.svg", -1, 140);
+    private class CenteredLogoPanel extends JPanel {
+        private final Icon logo;
+
+        {
+            final File logoFile = new File(projectDir, "SPSE-Jecna_Logotyp_Cernobily.svg");
+            logo = new FlatSVGIcon(logoFile);
+        }
 
         CenteredLogoPanel() {
             setOpaque(false);
-            Dimension size = new Dimension(logo.getIconWidth(), logo.getIconHeight());
+            final Dimension size = new Dimension(logo.getIconWidth(), logo.getIconHeight());
             setPreferredSize(size);
             setMinimumSize(size);
         }
+
         @Override
         protected final void paintComponent(Graphics g) {
             super.paintComponent(g);

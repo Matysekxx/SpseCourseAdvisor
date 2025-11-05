@@ -74,7 +74,7 @@ public class QuizModel {
         answers[currentQuestionIndex] = answer;
     }
 
-    private void recalculateScores() {
+    public void recalculateScores() {
         fieldStats.values().forEach(stats -> stats.score = 0);
         for (int i = 0; i < questionnaire.questions().size(); i++) {
             final Boolean answer = answers[i];

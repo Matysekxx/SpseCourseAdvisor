@@ -4,7 +4,6 @@
     <root id="archive" name="SpseCourseAdvisor.jar">
       <element id="directory" name="META-INF">
         <element id="file-copy" path="$PROJECT_DIR$/META-INF/MANIFEST.MF" />
-        <element id="dir-copy" path="$PROJECT_DIR$/src/main/resources" />
       </element>
       <element id="module-output" name="SpseCourseAdvisor.main" />
     </root>

@@ -23,6 +23,7 @@ public class QuizController {
         if (model.getCurrentQuestionIndex() < model.getTotalQuestions() - 1) {
             model.nextQuestion();
         } else {
+            model.recalculateScores();
             view.updateResult();
             view.showResultPanel();
         }
