@@ -172,11 +172,19 @@ public class Window extends JFrame implements PropertyChangeListener {
         return resultPanel;
     }
 
-    private void updateResult() {
+    public void updateResult() {
         final Optional<QuizModel.FieldStats> bestField = model.calculateResult();
+        
+        final double itPercentage = model.getFieldStats().getOrDefault("Informační technologie", new QuizModel.FieldStats("", 0)).getPercentage();
+        final double elePercentage = model.getFieldStats().getOrDefault("Elektrotechnika a robotika", new QuizModel.FieldStats("", 0)).getPercentage();
 
         final String resultMessage;
-        if (bestField.isPresent() && bestField.get().score > 0) {
+        if (itPercentage == 100.0 && elePercentage == 100.0) {
+            resultMessage = "<html><div style='text-align: center;'>Gratulujeme, jsi všestranný talent!<br>" +
+                    "Máš skvělé předpoklady pro <b style='color: " + toHex(BRAND_RED_ACCENT) + ";'>oba obory (IT i elektrotechniku)</b>.<br><br>" +
+
+                    "Oblast, kde se oba obory potkávají (Embedded systémy, Robotika, IoT),<br>je pro tebe jako stvořená!</div></html>";
+        } else if (bestField.isPresent() && bestField.get().score > 0) {
             final QuizModel.FieldStats winner = bestField.get();
             resultMessage = String.format(
                     "<html><div style='text-align: center;'>Nejvíce ti sedí obor:<br><h1 style='color: " + toHex(BRAND_RED_ACCENT) + ";'>%s</h1><br>Shoda: %.0f %%</div></html>",
@@ -357,12 +365,7 @@ public class Window extends JFrame implements PropertyChangeListener {
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (QuizModel.STATE_CHANGED.equals(evt.getPropertyName())) {
-            updateResult();
-            if (model.getCurrentQuestionIndex() == model.getTotalQuestions() - 1 && nextButton.getText().equals("Dokončit")) {
-                showResultPanel();
-            } else {
-                refreshQuestion();
-            }
+            refreshQuestion();
         }
     }
 

@@ -70,37 +70,37 @@ public class QuizModel {
         return questionnaire.questions().size();
     }
 
-    public void answerCurrentQuestion(boolean isYes) {
-        final int questionIndex = getCurrentQuestionIndex();
-        final String fieldName = getCurrentQuestion().fieldForYes();
-        if (fieldName != null) {
-            final long total = totalQuestionsPerField.getOrDefault(fieldName, 0L);
-            final FieldStats stats = fieldStats.computeIfAbsent(fieldName, name -> new FieldStats(name, total));
-            final Boolean previousAnswer = answers[questionIndex];
+    public void answerCurrentQuestion(boolean answer) {
+        answers[currentQuestionIndex] = answer;
+    }
 
-            if (previousAnswer != null && previousAnswer) {
-                stats.score--;
-            }
-
-            if (isYes) {
-                stats.score++;
+    private void recalculateScores() {
+        fieldStats.values().forEach(stats -> stats.score = 0);
+        for (int i = 0; i < questionnaire.questions().size(); i++) {
+            final Boolean answer = answers[i];
+            if (answer != null && answer) {
+                final String fieldName = questionnaire.questions().get(i).fieldForYes();
+                if (fieldName != null) {
+                    final long total = totalQuestionsPerField.getOrDefault(fieldName, 0L);
+                    final FieldStats stats = fieldStats.computeIfAbsent(fieldName, name -> new FieldStats(name, total));
+                    stats.score++;
+                }
             }
         }
-
-        answers[questionIndex] = isYes;
-        nextQuestion();
     }
 
     public void nextQuestion() {
         if (currentQuestionIndex < getTotalQuestions() - 1) {
             currentQuestionIndex++;
         }
+        recalculateScores();
         fireStateChange();
     }
 
     public void previousQuestion() {
         if (currentQuestionIndex > 0) {
             currentQuestionIndex--;
+            recalculateScores();
             fireStateChange();
         }
     }
@@ -113,9 +113,7 @@ public class QuizModel {
     public void reset() {
         currentQuestionIndex = 0;
         Arrays.fill(answers, null);
-        for (FieldStats stats : fieldStats.values()) {
-            stats.score = 0;
-        }
+        recalculateScores();
         fireStateChange();
     }
 

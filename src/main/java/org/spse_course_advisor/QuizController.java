@@ -16,12 +16,14 @@ public class QuizController {
 
     public void answerQuestion(boolean isYes) {
         model.answerCurrentQuestion(isYes);
+        nextQuestion();
     }
 
     public void nextQuestion() {
         if (model.getCurrentQuestionIndex() < model.getTotalQuestions() - 1) {
             model.nextQuestion();
         } else {
+            view.updateResult();
             view.showResultPanel();
         }
     }
