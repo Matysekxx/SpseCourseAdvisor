@@ -7,6 +7,7 @@ import javax.swing.border.Border;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.beans.PropertyChangeEvent;
@@ -330,10 +331,8 @@ public class Window extends JFrame implements PropertyChangeListener {
     }
 
     public static void launchFromJson(String resourcePath) {
-        try (final InputStream is = Window.class.getResourceAsStream(resourcePath)) {
-            if (is == null) {
-                throw new IOException("Resource not found: " + resourcePath);
-            }
+        try {
+            final InputStream is = new FileInputStream(resourcePath);
             final JsonLoader.Questionnaire q = JsonLoader.loadFromInputStream(is);
             SwingUtilities.invokeLater(() -> {
                 final QuizModel model = new QuizModel(q);
