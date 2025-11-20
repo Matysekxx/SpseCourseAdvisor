@@ -37,7 +37,6 @@ public class Window extends JFrame implements PropertyChangeListener {
         this.projectDir = projectDir;
         this.model = model;
         this.model.addPropertyChangeListener(this);
-        setTitle("SPŠE Course Advisor");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setExtendedState(JFrame.MAXIMIZED_BOTH);
         setUndecorated(true);
@@ -66,9 +65,11 @@ public class Window extends JFrame implements PropertyChangeListener {
         mainContainer.add(mainCardPanel, BorderLayout.CENTER);
 
         final JPanel rootPanel = new JPanel(new BorderLayout());
-        rootPanel.add(new Window.CenteredLogoPanel(), BorderLayout.NORTH);
+        rootPanel.add(new CenteredLogoPanel(), BorderLayout.NORTH);
         rootPanel.add(mainContainer, BorderLayout.CENTER);
         add(rootPanel);
+        setGlassPane(new LogoGlassPane());
+        getGlassPane().setVisible(true);
     }
 
     public void setController(QuizController controller) {
@@ -106,9 +107,30 @@ public class Window extends JFrame implements PropertyChangeListener {
         mainPanel.setOpaque(false);
         mainPanel.setBorder(BorderFactory.createEmptyBorder(0, 24, 50, 24));
 
+
+        final JPanel topPanel = new JPanel(new BorderLayout());
+        topPanel.setOpaque(false);
+
+        final JButton resetButton = new JButton("↻");
+        resetButton.setFocusPainted(false);
+        resetButton.setBorder(BorderFactory.createEmptyBorder(4, 10, 4, 10));
+        resetButton.setFont(resetButton.getFont().deriveFont(Font.BOLD, 40f));
+        resetButton.setBackground(new Color(0,0,0,0));
+
+        resetButton.addActionListener(e -> controller.restartQuiz());
+
+
+        final JPanel resetPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        resetPanel.setOpaque(false);
+        resetPanel.add(resetButton);
+        
+        topPanel.add(resetPanel, BorderLayout.NORTH);
+
         questionContainer = new JPanel(new BorderLayout());
         questionContainer.setOpaque(false);
-        mainPanel.add(questionContainer, BorderLayout.NORTH);
+        topPanel.add(questionContainer, BorderLayout.CENTER);
+        
+        mainPanel.add(topPanel, BorderLayout.NORTH);
 
         JPanel imagePanel = new JPanel(new BorderLayout());
         imagePanel.setOpaque(false);
@@ -226,10 +248,6 @@ public class Window extends JFrame implements PropertyChangeListener {
                 b.setBorder(border);
             }
         });
-    }
-
-    private void styleAccent(AbstractButton b) {
-        styleButton(b, BRAND_RED_ACCENT, Color.WHITE);
     }
 
     private void styleButton(AbstractButton b, Color background, Color foreground) {
@@ -366,10 +384,19 @@ public class Window extends JFrame implements PropertyChangeListener {
         return String.format("#%02x%02x%02x", color.getRed(), color.getGreen(), color.getBlue());
     }
 
-    private class CenteredLogoPanel extends JPanel {
-        private final Icon logo;
-        private final int targetWidth = 130;
+    private static class CenteredLogoPanel extends JPanel {
         private final int targetHeight = 130;
+        private final int padding = 5;
+
+        CenteredLogoPanel() {
+            setOpaque(false);
+            setPreferredSize(new Dimension(100, targetHeight + padding * 2));
+            setMinimumSize(new Dimension(50, targetHeight + padding * 2));
+        }
+    }
+
+    private class LogoGlassPane extends JComponent {
+        private final Icon logo;
         private final int padding = 5;
 
         {
@@ -377,23 +404,24 @@ public class Window extends JFrame implements PropertyChangeListener {
             logo = new FlatSVGIcon(logoFile);
         }
 
-        CenteredLogoPanel() {
+        LogoGlassPane() {
             setOpaque(false);
-            setPreferredSize(new Dimension(100, targetHeight + padding * 2));
-            setMinimumSize(new Dimension(50, targetHeight + padding * 2));
         }
 
         @Override
-        protected final void paintComponent(Graphics g) {
-            super.paintComponent(g);
+        public void paintComponent(Graphics g) {
             if (logo == null) return;
 
             final Graphics2D g2 = (Graphics2D) g.create();
             try {
+                final int targetWidth = 200;
+                final int targetHeight = 200;
+
                 int iconW = logo.getIconWidth();
                 int iconH = logo.getIconHeight();
+
                 if (iconW <= 0) iconW = targetWidth;
-                if (iconH <= 0) iconH = targetHeight;
+                if (iconH <= 0) iconH = 200;
 
                 final double sx = targetWidth / (double) iconW;
                 final double sy = targetHeight / (double) iconH;
