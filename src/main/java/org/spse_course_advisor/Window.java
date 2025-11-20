@@ -2,19 +2,17 @@ package org.spse_course_advisor;
 
 import com.formdev.flatlaf.extras.FlatSVGIcon;
 
-import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.border.Border;
 import java.awt.*;
 import java.awt.event.*;
-import java.awt.image.BufferedImage;
+import java.awt.geom.AffineTransform;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.net.URL;
 import java.util.Optional;
 
 public class Window extends JFrame implements PropertyChangeListener {
@@ -68,26 +66,13 @@ public class Window extends JFrame implements PropertyChangeListener {
         mainContainer.add(mainCardPanel, BorderLayout.CENTER);
 
         final JPanel rootPanel = new JPanel(new BorderLayout());
-        rootPanel.add(buildHeader(), BorderLayout.NORTH);
+        rootPanel.add(new Window.CenteredLogoPanel(), BorderLayout.NORTH);
         rootPanel.add(mainContainer, BorderLayout.CENTER);
         add(rootPanel);
     }
 
     public void setController(QuizController controller) {
         this.controller = controller;
-    }
-
-    private JComponent buildHeader() {
-        final JPanel header = new JPanel(new BorderLayout());
-        header.setBackground(BRAND_BLUE);
-        header.setBorder(BorderFactory.createEmptyBorder(50, 50, 50, 50));
-        final JPanel logoWrapper = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
-        logoWrapper.setOpaque(false);
-
-        final JPanel logoPanel = new CenteredLogoPanel();
-        logoWrapper.add(logoPanel);
-        header.add(logoWrapper, BorderLayout.CENTER);
-        return header;
     }
 
     private JComponent buildWelcomePanel() {
@@ -99,7 +84,7 @@ public class Window extends JFrame implements PropertyChangeListener {
         centerContent.setLayout(new GridBagLayout());
 
         final JLabel welcomeLabel = new JLabel("Vítejte v dotazníku pro výběr oboru!");
-        welcomeLabel.setFont(welcomeLabel.getFont().deriveFont(Font.BOLD, 28f));
+        welcomeLabel.setFont(welcomeLabel.getFont().deriveFont(Font.BOLD, 30f));
 
         final JButton startButton = new JButton("Začít formulář");
         stylePrimary(startButton);
@@ -119,7 +104,7 @@ public class Window extends JFrame implements PropertyChangeListener {
     private JComponent buildQuestionnairePanel() {
         final JPanel mainPanel = new JPanel(new BorderLayout(0, 20));
         mainPanel.setOpaque(false);
-        mainPanel.setBorder(BorderFactory.createEmptyBorder(24, 24, 24, 24));
+        mainPanel.setBorder(BorderFactory.createEmptyBorder(0, 24, 50, 24));
 
         questionContainer = new JPanel(new BorderLayout());
         questionContainer.setOpaque(false);
@@ -140,10 +125,14 @@ public class Window extends JFrame implements PropertyChangeListener {
 
         prevButton = new JButton("Zpět");
         styleSecondary(prevButton);
+        prevButton.setFont(prevButton.getFont().deriveFont(Font.BOLD, 26f));
+        prevButton.setPreferredSize(new Dimension(200, 90));
         prevButton.addActionListener(e -> controller.previousQuestion());
 
-        nextButton = new JButton("Další");
+        nextButton = new JButton("Přeskočit");
         stylePrimary(nextButton);
+        nextButton.setFont(nextButton.getFont().deriveFont(Font.BOLD, 26f));
+        nextButton.setPreferredSize(new Dimension(200, 90));
         nextButton.addActionListener(e -> controller.nextQuestion());
 
         buttonContainer.add(prevButton, BorderLayout.LINE_START);
@@ -291,8 +280,9 @@ public class Window extends JFrame implements PropertyChangeListener {
                 final File imageFile = new File(projectDir, imageName);
                 final ImageIcon imageIcon = new ImageIcon(imageFile.toURI().toURL());
 
-                final int maxWidth = 700;
-                final int maxHeight = 500;
+                final int maxWidth = Math.max(400, getWidth());
+                final int maxHeight = Math.max(300, getHeight() - 450);
+
                 if (imageIcon.getIconWidth() > maxWidth || imageIcon.getIconHeight() > maxHeight) {
                     final var widthRatio = (double) maxWidth / imageIcon.getIconWidth();
                     final var heightRatio = (double) maxHeight / imageIcon.getIconHeight();
@@ -316,35 +306,32 @@ public class Window extends JFrame implements PropertyChangeListener {
             imageLabel.setIcon(null);
         }
 
-        buildSingleChoiceQuestion(answerButtonsPanel, q);
+        buildSingleChoiceQuestion(answerButtonsPanel);
 
         questionContainer.revalidate();
         questionContainer.repaint();
         answerButtonsPanel.revalidate();
         answerButtonsPanel.repaint();
 
-        int index = model.getCurrentQuestionIndex();
+        final int index = model.getCurrentQuestionIndex();
         prevButton.setEnabled(index > 0);
-        nextButton.setText(index < model.getTotalQuestions() - 1 ? "Další" : "Dokončit");
-        if (index < model.getTotalQuestions() - 1) {
-            stylePrimary(nextButton);
-        } else {
-            styleAccent(nextButton);
-        }
+        nextButton.setText("Přeskočit");
+        stylePrimary(nextButton);
     }
 
-    private void buildSingleChoiceQuestion(JPanel answerPanel, JsonLoader.Question q) {
+    private void buildSingleChoiceQuestion(JPanel answerPanel) {
         final GridBagConstraints btnGbc = new GridBagConstraints();
-        btnGbc.insets = new Insets(5, 15, 5, 15);
-        answerPanel.add(createChoiceButton("Ano", true, q), btnGbc);
-        answerPanel.add(createChoiceButton("Ne", false, q), btnGbc);
+        btnGbc.insets = new Insets(15, 30, 15, 30);
+        answerPanel.add(createChoiceButton("Ano", true), btnGbc);
+        answerPanel.add(createChoiceButton("Ne", false), btnGbc);
     }
 
-    private JButton createChoiceButton(String text, boolean isYes, JsonLoader.Question question) {
+    private JButton createChoiceButton(String text, boolean isYes) {
         final JButton button = new JButton(text);
         stylePrimary(button);
-
-        button.setFont(button.getFont().deriveFont(Font.BOLD, 18f));
+        button.setFont(button.getFont().deriveFont(Font.BOLD, 26f));
+        button.setBorder(BorderFactory.createEmptyBorder(20, 40, 20, 40));
+        button.setPreferredSize(new Dimension(200, 90));
         button.addActionListener(e -> controller.answerQuestion(isYes));
         return button;
     }
@@ -381,25 +368,51 @@ public class Window extends JFrame implements PropertyChangeListener {
 
     private class CenteredLogoPanel extends JPanel {
         private final Icon logo;
+        private final int targetWidth = 130;
+        private final int targetHeight = 130;
+        private final int padding = 5;
 
         {
-            final File logoFile = new File(projectDir, "SPSE-Jecna_Logotyp_Cernobily.svg");
+            final File logoFile = new File(projectDir, "SPSE-Jecna_Logotyp.svg");
             logo = new FlatSVGIcon(logoFile);
         }
 
         CenteredLogoPanel() {
             setOpaque(false);
-            final Dimension size = new Dimension(logo.getIconWidth(), logo.getIconHeight());
-            setPreferredSize(size);
-            setMinimumSize(size);
+            setPreferredSize(new Dimension(100, targetHeight + padding * 2));
+            setMinimumSize(new Dimension(50, targetHeight + padding * 2));
         }
 
         @Override
         protected final void paintComponent(Graphics g) {
             super.paintComponent(g);
-            final int x = (getWidth() - logo.getIconWidth()) / 2;
-            final int y = (getHeight() - logo.getIconHeight()) / 2;
-            logo.paintIcon(this, g, x, y);
+            if (logo == null) return;
+
+            final Graphics2D g2 = (Graphics2D) g.create();
+            try {
+                int iconW = logo.getIconWidth();
+                int iconH = logo.getIconHeight();
+                if (iconW <= 0) iconW = targetWidth;
+                if (iconH <= 0) iconH = targetHeight;
+
+                final double sx = targetWidth / (double) iconW;
+                final double sy = targetHeight / (double) iconH;
+                final double scale = Math.min(sx, sy);
+                final int drawW = (int) Math.round(iconW * scale);
+
+                final int x = getWidth() - drawW - padding;
+
+                final AffineTransform old = g2.getTransform();
+                g2.translate(x, padding);
+                g2.scale(scale, scale);
+
+                logo.paintIcon(this, g2, 0, 0);
+                g2.setTransform(old);
+            } finally {
+                g2.dispose();
+            }
         }
     }
+
+
 }
