@@ -3,7 +3,6 @@ package org.spse_course_advisor;
 import com.formdev.flatlaf.extras.FlatSVGIcon;
 
 import javax.swing.*;
-import javax.swing.border.Border;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.AffineTransform;
@@ -17,8 +16,6 @@ import java.util.Optional;
 
 public class Window extends JFrame implements PropertyChangeListener {
     private static final Color BRAND_BLUE = new Color(148, 185, 239);
-    private static final Color BRAND_RED_ACCENT = Color.RED;
-    private static final Color BACKGROUND_GRAY = new Color(240, 240, 240);
     private static final String WELCOME_PANEL = "WELCOME_PANEL" ;
     private static final String QUESTIONNAIRE_PANEL = "QUESTIONNAIRE_PANEL" ;
     private static final String RESULT_PANEL = "RESULT_PANEL" ;
@@ -27,10 +24,7 @@ public class Window extends JFrame implements PropertyChangeListener {
     private QuizController controller;
     private final JPanel mainCardPanel;
     private JPanel questionContainer;
-    private JPanel answerButtonsPanel;
-    private JButton prevButton;
     private JLabel imageLabel;
-    private JButton nextButton;
     private JLabel resultLabel;
 
     public Window(QuizModel model, String projectDir) {
@@ -53,20 +47,16 @@ public class Window extends JFrame implements PropertyChangeListener {
             }
         });
 
-        final JPanel mainContainer = new JPanel(new BorderLayout());
-        mainContainer.setBackground(BACKGROUND_GRAY);
-
         mainCardPanel = new JPanel(new CardLayout());
-        mainCardPanel.setOpaque(false);
         mainCardPanel.add(buildWelcomePanel(), WELCOME_PANEL);
         mainCardPanel.add(buildQuestionnairePanel(), QUESTIONNAIRE_PANEL);
         mainCardPanel.add(buildResultPanel(), RESULT_PANEL);
 
-        mainContainer.add(mainCardPanel, BorderLayout.CENTER);
-
         final JPanel rootPanel = new JPanel(new BorderLayout());
-        rootPanel.add(new CenteredLogoPanel(), BorderLayout.NORTH);
-        rootPanel.add(mainContainer, BorderLayout.CENTER);
+        rootPanel.add(Box.createRigidArea(
+                new Dimension(0, 140)
+        ), BorderLayout.NORTH);
+        rootPanel.add(mainCardPanel, BorderLayout.CENTER);
         add(rootPanel);
         setGlassPane(new LogoGlassPane());
         getGlassPane().setVisible(true);
@@ -89,8 +79,10 @@ public class Window extends JFrame implements PropertyChangeListener {
 
         final JButton startButton = new JButton("Začít formulář");
         stylePrimary(startButton);
-        startButton.setFont(startButton.getFont().deriveFont(20f));
+        startButton.setFont(startButton.getFont().deriveFont(Font.BOLD, 26f));
+        startButton.setPreferredSize(new Dimension(300, 90));
         startButton.addActionListener(e -> controller.startQuiz());
+
 
         final GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridwidth = GridBagConstraints.REMAINDER;
@@ -123,26 +115,21 @@ public class Window extends JFrame implements PropertyChangeListener {
         
         mainPanel.add(topPanel, BorderLayout.NORTH);
 
-        JPanel imagePanel = new JPanel(new BorderLayout());
-        imagePanel.setOpaque(false);
         imageLabel = new JLabel();
         imageLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        imagePanel.add(imageLabel, BorderLayout.CENTER);
-        mainPanel.add(imagePanel, BorderLayout.CENTER);
+        imageLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 50, 0));
+        mainPanel.add(imageLabel, BorderLayout.CENTER);
 
         final JPanel buttonContainer = new JPanel(new FlowLayout(FlowLayout.CENTER, 40, 10));
         buttonContainer.setOpaque(false);
 
-        answerButtonsPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 0));
-        answerButtonsPanel.setOpaque(false);
-
-        prevButton = new JButton("Zpět");
+        final JButton prevButton = new JButton("Zpět");
         stylePrimary(prevButton);
         prevButton.setFont(prevButton.getFont().deriveFont(Font.BOLD, 26f));
         prevButton.setPreferredSize(new Dimension(200, 90));
         prevButton.addActionListener(e -> controller.previousQuestion());
 
-        nextButton = new JButton("Přeskočit");
+        final JButton nextButton = new JButton("Přeskočit");
         stylePrimary(nextButton);
         nextButton.setFont(nextButton.getFont().deriveFont(Font.BOLD, 26f));
         nextButton.setPreferredSize(new Dimension(200, 90));
@@ -187,7 +174,6 @@ public class Window extends JFrame implements PropertyChangeListener {
         centerContent.add(restartButton, new GridBagConstraints());
         resultPanel.add(centerContent, BorderLayout.SOUTH);
         resultPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 50, 0));
-
         return resultPanel;
     }
 
@@ -196,21 +182,18 @@ public class Window extends JFrame implements PropertyChangeListener {
 
         final double itPercentage = model.getFieldStats().getOrDefault("Informační technologie", new QuizModel.FieldStats("", 0)).getPercentage();
         final double elePercentage = model.getFieldStats().getOrDefault("Elektrotechnika a robotika", new QuizModel.FieldStats("", 0)).getPercentage();
-
         final String resultMessage;
         if (itPercentage == 100.0 && elePercentage == 100.0) {
             resultMessage = "<html>" + "<div style='text-align: center;'>Gratulujeme, jsi všestranný talent!<br>" +
-                    "Máš skvělé předpoklady pro <b style='color: " + toHex(BRAND_RED_ACCENT) + ";'>oba obory (IT i elektrotechniku)</b>.<br></div></html>" ;
+                    "Máš skvělé předpoklady pro <b style='color: " + toHex(Color.RED) + ";'>oba obory (IT i elektrotechniku)</b>.<br></div></html>" ;
         } else if (bestField.isPresent() && bestField.get().score > 0) {
             final QuizModel.FieldStats winner = bestField.get();
             resultMessage = String.format(
-                    "<html><div style='text-align: center;'>Nejvíce ti sedí obor:<br><h1 style='color: " + toHex(BRAND_RED_ACCENT) + ";'>%s</h1><br>Shoda: %.0f %%</div></html>",
+                    "<html><div style='text-align: center;'>Nejvíce ti sedí obor:<br><h1 style='color: " + toHex(Color.RED) + ";'>%s</h1><br>Shoda: %.0f %%</div></html>",
                     winner.name, winner.getPercentage()
             );
-        } else {
-            resultMessage = "<html><div style='text-align: center;'>Nepodařilo se určit vhodný obor.<br>Zkus to znovu!</div></html>" ;
-        }
-
+        } else resultMessage =
+                "<html><div style='text-align: center;'>Nepodařilo se určit vhodný obor.<br>Zkus to znovu!</div></html>" ;
         resultLabel.setText(resultMessage);
     }
 
@@ -237,23 +220,13 @@ public class Window extends JFrame implements PropertyChangeListener {
         b.setBackground(background);
         b.setForeground(foreground);
         b.setFocusPainted(false);
-        b.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         b.setBorder(BorderFactory.createEmptyBorder(8, 20, 8, 20));
-
         b.addMouseListener(new MouseAdapter() {
-            public void mouseEntered(MouseEvent evt) {
-                if (background.equals(Color.WHITE)) {
-                    b.setForeground(BRAND_BLUE);
-                    b.setBorder(BorderFactory.createCompoundBorder(
-                            BorderFactory.createLineBorder(BRAND_BLUE, 1),
-                            BorderFactory.createEmptyBorder(7, 19, 7, 19)
-                    ));
-                    return;
-                }
+            @Override public void mouseEntered(MouseEvent evt) {
                 b.setBackground(background.brighter());
             }
 
-            public void mouseExited(MouseEvent evt) {
+            @Override public void mouseExited(MouseEvent evt) {
                 b.setBackground(background);
                 b.setForeground(foreground);
             }
@@ -262,7 +235,6 @@ public class Window extends JFrame implements PropertyChangeListener {
 
     private void refreshQuestion() {
         questionContainer.removeAll();
-        answerButtonsPanel.removeAll();
 
         final JsonLoader.Question q = model.getCurrentQuestion();
 
@@ -270,8 +242,9 @@ public class Window extends JFrame implements PropertyChangeListener {
                 "<html><div style='text-align: center;'>" + q.prompt() + "</div></html>",
                 SwingConstants.CENTER
         );
-        prompt.setFont(prompt.getFont().deriveFont(Font.BOLD, 28f));
+        prompt.setFont(prompt.getFont().deriveFont(Font.BOLD, 35f));
         prompt.setForeground(Color.BLACK);
+        prompt.setBorder(BorderFactory.createEmptyBorder(8, 0, 50, 0));
         questionContainer.add(prompt, BorderLayout.NORTH);
 
         final String imageName = q.image();
@@ -308,8 +281,6 @@ public class Window extends JFrame implements PropertyChangeListener {
         }
         questionContainer.revalidate();
         questionContainer.repaint();
-        answerButtonsPanel.revalidate();
-        answerButtonsPanel.repaint();
     }
 
     private JButton createChoiceButton(String text, boolean isYes) {
@@ -352,17 +323,6 @@ public class Window extends JFrame implements PropertyChangeListener {
         return String.format("#%02x%02x%02x", color.getRed(), color.getGreen(), color.getBlue());
     }
 
-    private static class CenteredLogoPanel extends JPanel {
-        private final int targetHeight = 130;
-        private final int padding = 5;
-
-        CenteredLogoPanel() {
-            setOpaque(false);
-            setPreferredSize(new Dimension(100, targetHeight + padding * 2));
-            setMinimumSize(new Dimension(50, targetHeight + padding * 2));
-        }
-    }
-
     private class LogoGlassPane extends JComponent {
         private final Icon logo;
         private final int padding = 5;
@@ -370,9 +330,6 @@ public class Window extends JFrame implements PropertyChangeListener {
         {
             final File logoFile = new File(projectDir, "SPSE-Jecna_Logotyp.svg");
             logo = new FlatSVGIcon(logoFile);
-        }
-
-        LogoGlassPane() {
             setOpaque(false);
         }
 
