@@ -76,7 +76,7 @@ public class Window extends JFrame implements PropertyChangeListener {
         this.controller = controller;
     }
 
-    private JComponent buildWelcomePanel() {
+    private JPanel buildWelcomePanel() {
         final JPanel welcomePanel = new JPanel(new BorderLayout());
         welcomePanel.setOpaque(false);
 
@@ -84,8 +84,8 @@ public class Window extends JFrame implements PropertyChangeListener {
         centerContent.setOpaque(false);
         centerContent.setLayout(new GridBagLayout());
 
-        final JLabel welcomeLabel = new JLabel("Vítejte v dotazníku pro výběr oboru!");
-        welcomeLabel.setFont(welcomeLabel.getFont().deriveFont(Font.BOLD, 30f));
+        final JLabel welcomeLabel = new JLabel("Vítejte v dotazníku pro výběr oboru");
+        welcomeLabel.setFont(welcomeLabel.getFont().deriveFont(Font.BOLD, 45f));
 
         final JButton startButton = new JButton("Začít formulář");
         stylePrimary(startButton);
@@ -94,7 +94,7 @@ public class Window extends JFrame implements PropertyChangeListener {
 
         final GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridwidth = GridBagConstraints.REMAINDER;
-        gbc.insets = new Insets(0, 0, 20, 0);
+        gbc.insets = new Insets(0, 0, 70, 0);
         centerContent.add(welcomeLabel, gbc);
         centerContent.add(startButton, gbc);
 
@@ -102,7 +102,7 @@ public class Window extends JFrame implements PropertyChangeListener {
         return welcomePanel;
     }
 
-    private JComponent buildQuestionnairePanel() {
+    private JPanel buildQuestionnairePanel() {
         final JPanel mainPanel = new JPanel(new BorderLayout(0, 20));
         mainPanel.setOpaque(false);
         mainPanel.setBorder(BorderFactory.createEmptyBorder(0, 24, 50, 24));
@@ -111,20 +111,11 @@ public class Window extends JFrame implements PropertyChangeListener {
         final JPanel topPanel = new JPanel(new BorderLayout());
         topPanel.setOpaque(false);
 
-        final JButton resetButton = new JButton("↻");
-        resetButton.setFocusPainted(false);
-        resetButton.setBorder(BorderFactory.createEmptyBorder(4, 10, 4, 10));
-        resetButton.setFont(resetButton.getFont().deriveFont(Font.BOLD, 40f));
-        resetButton.setBackground(new Color(0,0,0,0));
-
+        final JButton resetButton = new JButton("Reset");
+        stylePrimary(resetButton);
+        resetButton.setFont(resetButton.getFont().deriveFont(Font.BOLD, 26f));
+        resetButton.setPreferredSize(new Dimension(200, 90));
         resetButton.addActionListener(e -> controller.restartQuiz());
-
-
-        final JPanel resetPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
-        resetPanel.setOpaque(false);
-        resetPanel.add(resetButton);
-        
-        topPanel.add(resetPanel, BorderLayout.NORTH);
 
         questionContainer = new JPanel(new BorderLayout());
         questionContainer.setOpaque(false);
@@ -139,14 +130,14 @@ public class Window extends JFrame implements PropertyChangeListener {
         imagePanel.add(imageLabel, BorderLayout.CENTER);
         mainPanel.add(imagePanel, BorderLayout.CENTER);
 
-        final JPanel buttonContainer = new JPanel(new BorderLayout());
+        final JPanel buttonContainer = new JPanel(new FlowLayout(FlowLayout.CENTER, 40, 10));
         buttonContainer.setOpaque(false);
 
         answerButtonsPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 0));
         answerButtonsPanel.setOpaque(false);
 
         prevButton = new JButton("Zpět");
-        styleSecondary(prevButton);
+        stylePrimary(prevButton);
         prevButton.setFont(prevButton.getFont().deriveFont(Font.BOLD, 26f));
         prevButton.setPreferredSize(new Dimension(200, 90));
         prevButton.addActionListener(e -> controller.previousQuestion());
@@ -157,16 +148,23 @@ public class Window extends JFrame implements PropertyChangeListener {
         nextButton.setPreferredSize(new Dimension(200, 90));
         nextButton.addActionListener(e -> controller.nextQuestion());
 
-        buttonContainer.add(prevButton, BorderLayout.LINE_START);
-        buttonContainer.add(answerButtonsPanel, BorderLayout.CENTER);
-        buttonContainer.add(nextButton, BorderLayout.LINE_END);
+        buttonContainer.add(prevButton);
+
+        final JButton yesBtn = createChoiceButton("Ano", true);
+        final JButton noBtn = createChoiceButton("Ne", false);
+
+        buttonContainer.add(yesBtn);
+        buttonContainer.add(nextButton);
+        buttonContainer.add(noBtn);
+
+        buttonContainer.add(resetButton);
 
         mainPanel.add(buttonContainer, BorderLayout.SOUTH);
 
         return mainPanel;
     }
 
-    private JComponent buildResultPanel() {
+    private JPanel buildResultPanel() {
         final JPanel resultPanel = new JPanel(new BorderLayout());
         resultPanel.setOpaque(false);
 
@@ -235,21 +233,6 @@ public class Window extends JFrame implements PropertyChangeListener {
         styleButton(b, BRAND_BLUE, Color.BLACK);
     }
 
-    private void styleSecondary(AbstractButton b) {
-        styleButton(b, Color.WHITE, Color.BLACK);
-        final Border border = BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(Color.LIGHT_GRAY, 1),
-                BorderFactory.createEmptyBorder(7, 19, 7, 19)
-        );
-        b.setBorder(border);
-        b.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseExited(MouseEvent e) {
-                b.setBorder(border);
-            }
-        });
-    }
-
     private void styleButton(AbstractButton b, Color background, Color foreground) {
         b.setBackground(background);
         b.setForeground(foreground);
@@ -289,7 +272,7 @@ public class Window extends JFrame implements PropertyChangeListener {
         );
         prompt.setFont(prompt.getFont().deriveFont(Font.BOLD, 28f));
         prompt.setForeground(Color.BLACK);
-        questionContainer.add(prompt, BorderLayout.CENTER);
+        questionContainer.add(prompt, BorderLayout.NORTH);
 
         final String imageName = q.image();
         if (imageName != null && !imageName.isEmpty()) {
@@ -323,25 +306,10 @@ public class Window extends JFrame implements PropertyChangeListener {
         } else {
             imageLabel.setIcon(null);
         }
-
-        buildSingleChoiceQuestion(answerButtonsPanel);
-
         questionContainer.revalidate();
         questionContainer.repaint();
         answerButtonsPanel.revalidate();
         answerButtonsPanel.repaint();
-
-        final int index = model.getCurrentQuestionIndex();
-        prevButton.setEnabled(index > 0);
-        nextButton.setText("Přeskočit");
-        stylePrimary(nextButton);
-    }
-
-    private void buildSingleChoiceQuestion(JPanel answerPanel) {
-        final GridBagConstraints btnGbc = new GridBagConstraints();
-        btnGbc.insets = new Insets(15, 30, 15, 30);
-        answerPanel.add(createChoiceButton("Ano", true), btnGbc);
-        answerPanel.add(createChoiceButton("Ne", false), btnGbc);
     }
 
     private JButton createChoiceButton(String text, boolean isYes) {
@@ -414,8 +382,8 @@ public class Window extends JFrame implements PropertyChangeListener {
 
             final Graphics2D g2 = (Graphics2D) g.create();
             try {
-                final int targetWidth = 200;
-                final int targetHeight = 200;
+                final int targetWidth = 300;
+                final int targetHeight = 300;
 
                 int iconW = logo.getIconWidth();
                 int iconH = logo.getIconHeight();
