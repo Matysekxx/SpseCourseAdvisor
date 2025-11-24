@@ -75,7 +75,7 @@ public class Window extends JFrame implements PropertyChangeListener {
         centerContent.setLayout(new GridBagLayout());
 
         final JLabel welcomeLabel = new JLabel("Vítejte v dotazníku pro výběr oboru");
-        welcomeLabel.setFont(welcomeLabel.getFont().deriveFont(Font.BOLD, 45f));
+        welcomeLabel.setFont(welcomeLabel.getFont().deriveFont(Font.BOLD, 35f));
 
         final JButton startButton = new JButton("Začít formulář");
         stylePrimary(startButton);
@@ -99,18 +99,27 @@ public class Window extends JFrame implements PropertyChangeListener {
         mainPanel.setOpaque(false);
         mainPanel.setBorder(BorderFactory.createEmptyBorder(0, 24, 50, 24));
 
-
         final JPanel topPanel = new JPanel(new BorderLayout());
         topPanel.setOpaque(false);
 
-        final JButton resetButton = new JButton("Reset");
-        stylePrimary(resetButton);
-        resetButton.setFont(resetButton.getFont().deriveFont(Font.BOLD, 26f));
-        resetButton.setPreferredSize(new Dimension(200, 90));
+        final JButton resetButton = new JButton("↻");
+        resetButton.setContentAreaFilled(false);
+        resetButton.setBorderPainted(false);
+        resetButton.setOpaque(false);
+        resetButton.setFocusPainted(false);
+        resetButton.setForeground(Color.BLACK);
+        resetButton.setFont(resetButton.getFont().deriveFont(Font.BOLD, 36f));
+        resetButton.setPreferredSize(new Dimension(100, 60));
         resetButton.addActionListener(e -> controller.restartQuiz());
+
+        final JPanel resetWrapper = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        resetWrapper.setOpaque(false);
+        resetWrapper.add(resetButton);
 
         questionContainer = new JPanel(new BorderLayout());
         questionContainer.setOpaque(false);
+        
+        topPanel.add(resetWrapper, BorderLayout.NORTH);
         topPanel.add(questionContainer, BorderLayout.CENTER);
         
         mainPanel.add(topPanel, BorderLayout.NORTH);
@@ -120,33 +129,42 @@ public class Window extends JFrame implements PropertyChangeListener {
         imageLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 50, 0));
         mainPanel.add(imageLabel, BorderLayout.CENTER);
 
-        final JPanel buttonContainer = new JPanel(new FlowLayout(FlowLayout.CENTER, 40, 10));
-        buttonContainer.setOpaque(false);
-
+        final JPanel bottomWrapper = new JPanel(new BorderLayout());
+        bottomWrapper.setOpaque(false);
         final JButton prevButton = new JButton("Zpět");
         stylePrimary(prevButton);
         prevButton.setFont(prevButton.getFont().deriveFont(Font.BOLD, 26f));
-        prevButton.setPreferredSize(new Dimension(200, 90));
+        prevButton.setPreferredSize(new Dimension(200, 60));
         prevButton.addActionListener(e -> controller.previousQuestion());
+
+        final JPanel prevWrapper = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 35));
+        prevWrapper.setOpaque(false);
+        prevWrapper.add(prevButton);
 
         final JButton nextButton = new JButton("Přeskočit");
         stylePrimary(nextButton);
         nextButton.setFont(nextButton.getFont().deriveFont(Font.BOLD, 26f));
-        nextButton.setPreferredSize(new Dimension(200, 90));
+        nextButton.setPreferredSize(new Dimension(200, 60));
         nextButton.addActionListener(e -> controller.nextQuestion());
 
-        buttonContainer.add(prevButton);
+        final JPanel nextWrapper = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 35));
+        nextWrapper.setOpaque(false);
+        nextWrapper.add(nextButton);
+
+        final JPanel buttonContainer = new JPanel(new FlowLayout(FlowLayout.CENTER, 40, 10));
+        buttonContainer.setOpaque(false);
 
         final JButton yesBtn = createChoiceButton("Ano", true);
         final JButton noBtn = createChoiceButton("Ne", false);
 
         buttonContainer.add(yesBtn);
-        buttonContainer.add(nextButton);
         buttonContainer.add(noBtn);
 
-        buttonContainer.add(resetButton);
+        bottomWrapper.add(prevWrapper, BorderLayout.WEST);
+        bottomWrapper.add(buttonContainer, BorderLayout.CENTER);
+        bottomWrapper.add(nextWrapper, BorderLayout.EAST);
 
-        mainPanel.add(buttonContainer, BorderLayout.SOUTH);
+        mainPanel.add(bottomWrapper, BorderLayout.SOUTH);
 
         return mainPanel;
     }
@@ -212,11 +230,11 @@ public class Window extends JFrame implements PropertyChangeListener {
         cl.show(mainCardPanel, RESULT_PANEL);
     }
 
-    private void stylePrimary(AbstractButton b) {
+    private void stylePrimary(JButton b) {
         styleButton(b, BRAND_BLUE, Color.BLACK);
     }
 
-    private void styleButton(AbstractButton b, Color background, Color foreground) {
+    private void styleButton(JButton b, Color background, Color foreground) {
         b.setBackground(background);
         b.setForeground(foreground);
         b.setFocusPainted(false);
@@ -242,7 +260,7 @@ public class Window extends JFrame implements PropertyChangeListener {
                 "<html><div style='text-align: center;'>" + q.prompt() + "</div></html>",
                 SwingConstants.CENTER
         );
-        prompt.setFont(prompt.getFont().deriveFont(Font.BOLD, 35f));
+        prompt.setFont(prompt.getFont().deriveFont(Font.BOLD, 30f));
         prompt.setForeground(Color.BLACK);
         prompt.setBorder(BorderFactory.createEmptyBorder(8, 0, 50, 0));
         questionContainer.add(prompt, BorderLayout.NORTH);
@@ -288,7 +306,7 @@ public class Window extends JFrame implements PropertyChangeListener {
         stylePrimary(button);
         button.setFont(button.getFont().deriveFont(Font.BOLD, 26f));
         button.setBorder(BorderFactory.createEmptyBorder(20, 40, 20, 40));
-        button.setPreferredSize(new Dimension(200, 90));
+        button.setPreferredSize(new Dimension(220, 110));
         button.addActionListener(e -> controller.answerQuestion(isYes));
         return button;
     }
