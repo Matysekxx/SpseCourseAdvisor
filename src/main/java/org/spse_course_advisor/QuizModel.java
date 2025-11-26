@@ -90,7 +90,7 @@ public class QuizModel {
     }
 
     public void nextQuestion() {
-        if (currentQuestionIndex < getTotalQuestions() - 1) {
+        if (currentQuestionIndex <= getTotalQuestions()) {
             currentQuestionIndex++;
         }
         recalculateScores();
